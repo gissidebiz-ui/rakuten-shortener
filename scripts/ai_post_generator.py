@@ -127,7 +127,7 @@ def main():
     subprocess.run(["git", "push"])
 
     # 出力
-    with open("data/posts.txt", "w", encoding="utf-8") as f:
+    with open("../data/posts.txt", "w", encoding="utf-8") as f:
         for p in posts:
             f.write(p + "\n")
 
