@@ -108,7 +108,7 @@ def main():
     posts = []
 
     # CSV読み込み
-    with open("../data/input.csv", "r", encoding="utf-8") as f:
+    with open("../data/input/input.csv", "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             product_name = row[0]
@@ -127,7 +127,7 @@ def main():
     subprocess.run(["git", "push"])
 
     # 出力
-    with open("../data/posts.txt", "w", encoding="utf-8") as f:
+    with open("../data/output/posts.txt", "w", encoding="utf-8") as f:
         for p in posts:
             f.write(p + "\n")
 
