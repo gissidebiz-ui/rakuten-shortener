@@ -88,7 +88,7 @@ def main():
             all_items.extend(items)
 
     # input.csv に保存
-    with open("input.csv", "w", encoding="utf-8", newline="") as f:
+    with open("../data/input.csv", "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         for title, url in all_items:
             writer.writerow([title, url])
