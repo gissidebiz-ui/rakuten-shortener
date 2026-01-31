@@ -100,7 +100,7 @@ def generate_post_text(product_name, short_url):
         return f"{text} {short_url}"
 
     except Exception as e:
-        return f"[AI生成エラー] {product_name} → {short_url}"
+        return f"[AI生成エラー] {product_name} → {short_url} | {str(e)}"
 
 # ================================
 # 7. メイン処理
