@@ -74,28 +74,32 @@ def generate_post_text(product_name, short_url):
 """
 
     try:
+        # モデル名を “-latest” に変更（新SDKで安定）
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-latest",
             contents=prompt
         )
 
         # 新SDKのレスポンス形式に対応
+        text = None
+
         if hasattr(response, "text") and response.text:
             text = response.text.strip()
         else:
+            # fallback（新SDK標準形式）
             text = response.candidates[0].content.parts[0].text.strip()
 
         # 改行を \n に変換して1行にする
         text = text.replace("\n", "\\n")
 
-        # 念のため50文字以内に強制トリム
+        # 50文字以内に強制トリム
         if len(text) > 50:
             text = text[:50]
 
         # URLを文末に追加
         return f"{text} {short_url}"
 
-    except Exception:
+    except Exception as e:
         return f"[AI生成エラー] {product_name} → {short_url}"
 
 # ================================
