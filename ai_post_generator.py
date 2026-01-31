@@ -135,7 +135,7 @@ def main():
     # 出力
     with open("posts.txt", "w", encoding="utf-8") as f:
         for p in posts:
-            f.write(p + "\n\n")
+            f.write(p + "\n")
 
     print("完了しました！ → posts.txt に投稿文を保存しました。")
 
