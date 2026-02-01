@@ -67,7 +67,8 @@ def generate_with_retry(prompt, max_retries=5):
                 return response.candidates[0].content.parts[0].text.strip()
 
         except Exception as e:
-            wait = 1 + i
+            # wait = 1 + i
+            wait = 1 
             print(f"AI呼び出し失敗: {e} → {wait}秒待機して再試行")
             time.sleep(wait)
 
