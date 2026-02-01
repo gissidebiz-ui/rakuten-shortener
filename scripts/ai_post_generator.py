@@ -48,7 +48,7 @@ def create_redirect_html(url, filename):
 def generate_short_url(affiliate_url):
     filename = random_filename()
     create_redirect_html(affiliate_url, filename)
-    return f"https://gissidebiz-ui.github.io/rakuten-shortener/{filename}"
+    return f"https://gissidebiz-ui.github.io/rakuten-shortener/html/{filename}"
 
 # ================================
 # 6. AI呼び出し（リトライ付き）
@@ -69,7 +69,7 @@ def generate_with_retry(prompt, max_retries=5):
 
         except Exception as e:
             # wait = 1 + i
-            wait = 1 
+            wait = 0 
             print(f"AI呼び出し失敗: {e} → {wait}秒待機して再試行")
             time.sleep(wait)
 
