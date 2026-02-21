@@ -191,7 +191,7 @@ class AffiliatePostGenerator:
             text = re.sub(r'([^\\n])#', r'\1\\n#', text)
 
         # ===== Step 8: URL を結合（\\n を確実に挿入） =====
-        return f"{text}\\n\\n{short_url}"
+        return f"{text}\\n{short_url}"
 
     def generate(self) -> None:
         """全アカウントのアフィリエイト投稿文を生成し、GitHub へプッシュします。"""
