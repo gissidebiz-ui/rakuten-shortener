@@ -6,15 +6,29 @@ import os
 import string
 import random
 import html as html_module
+from typing import Optional
 from config_loader import load_secrets
 
 
-def random_filename(length=6):
-    """Generate a random filename without .html extension."""
+def random_filename(length: int = 6) -> str:
+    """Generate a random filename without .html extension.
+    
+    Args:
+        length: Length of generated filename (default: 6)
+        
+    Returns:
+        Random filename string with lowercase letters and digits
+    """
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 
-def create_redirect_html(url, filename, title="商品詳細はこちら", image_url="", output_dir="../html"):
+def create_redirect_html(
+    url: str,
+    filename: str,
+    title: str = "商品詳細はこちら",
+    image_url: str = "",
+    output_dir: str = "../html"
+) -> None:
     """
     Create redirect HTML page with OGP tags for social media previews.
     
@@ -62,7 +76,12 @@ def create_redirect_html(url, filename, title="商品詳細はこちら", image_
         print(f"[ERROR] ファイル保存失敗: {e}")
 
 
-def generate_short_url(affiliate_url, product_name, image_url, output_dir="../html"):
+def generate_short_url(
+    affiliate_url: str,
+    product_name: str,
+    image_url: str,
+    output_dir: str = "../html"
+) -> str:
     """
     Generate a short URL by creating redirect HTML and returning shortened URL.
     
