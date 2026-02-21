@@ -130,7 +130,7 @@ class AffiliatePostGenerator:
 
         prompt = f"""
 以下の情報から、X（旧Twitter）向けの「思わずクリックしたくなる」魅力的な投稿文を作成してください。
-※文章の中にURLや[短縮URL]のようなプレースホルダは絶対に含めないでください。
+※文章の中にURLや[短縮URL]のようなプレースホルダは含めず、代わりに改行が必要な箇所には \n を入れてください。
 
 【商品名】
 {safe_name}
@@ -143,20 +143,23 @@ class AffiliatePostGenerator:
 ・価格、高評価、ポイント還元などの「お得感・安心感」を1つ以上盛り込む
 ・宣伝臭を抑えつつ、利用者のメリット（「これいい！」「助かる」等）を強調
 ・絵文字は1つまで
-・短縮URLはシステムの都合上、文末に自動付与されるため、生成文には含めない
-・1行で完結（改行しない）
+・短縮URLはシステムの最後に自動付与されるため、生成文には含めない
+・1行で完結（改行が必要な場合は \n を使用し、実際の改行はしない）
 """
         text = generate_with_retry(self.client, prompt, self.config["affiliate_post_generation"])
         
-        # AI が勝手に URL やプレースホルダを出力に含める場合があるため排除
+        # AI が勝手に URL やプレースホルダを出力に含める場合があるため排除・置換
         text = re.sub(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', '', text)
-        text = text.replace("[短縮URL]", "").replace("【短縮URL】", "").strip()
+        # [短縮URL] などを \n に置き換える
+        text = text.replace("[短縮URL]", "\\n").replace("【短縮URL】", "\\n")
+        text = text.strip()
         
         # ハッシュタグの前に強制的に改行を挿入（設定にあれば）
         if "#" in text:
             text = text.replace(" #", "\\n#").replace("　#", "\\n#")
             text = re.sub(r'([^\\n])#', r'\1\\n#', text)
 
+        # 最後に \n を加えて URL を結合（ユーザーの要望通り \n を確実に挿入）
         return f"{text}\\n\\n{short_url}"
 
     def generate(self) -> None:
