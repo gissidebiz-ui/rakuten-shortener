@@ -162,7 +162,14 @@ class AffiliatePostGenerator:
         # 2. AIのメタ的な発言（〜パターン等）を削除
         text = re.sub(r'上記例を参考にして.*', '', text)
         text = re.sub(r'他に\d+パターン.*', '', text)
-        # 3. 日本語以外のノイズ（ロシア語等）が単発で混入する場合の簡易的な対策（記号等も整理）
+        # 3. プレースホルダ（〇〇、△△）が含まれる場合はエラーとして扱う（再試行させる）
+        if "〇" in text or "△" in text or "XX" in text:
+            return "[AIエラー] プレースホルダが含まれています"
+        
+        # 4. 外国語が多すぎる場合のエラー判定（簡易的な日本語判定）
+        if not re.search(r'[ぁ-んァ-ン一-龥]', text):
+             return "[AIエラー] 日本語が含まれていません"
+
         text = text.strip()
 
         # ハッシュタグの前に強制的に改行を挿入（設定にあれば）

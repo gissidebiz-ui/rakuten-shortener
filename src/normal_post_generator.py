@@ -52,6 +52,14 @@ class NormalPostGenerator:
             text = re.sub(r'上記例を参考にして.*', '', text)
             text = re.sub(r'他に\d+パターン.*', '', text)
             
+            # 3. プレースホルダ（〇〇、△△）が含まれる場合はエラーとして扱う
+            if "〇" in text or "△" in text or "XX" in text:
+                return "[AIエラー] プレースホルダが含まれています"
+                
+            # 4. 外国語が多すぎる場合のエラー判定
+            if not re.search(r'[ぁ-んァ-ン一-龥]', text):
+                 return "[AIエラー] 日本語が含まれていません"
+            
             return text.strip()
 
         # 設定ファイルからテーマあたりの生成件数を取得
