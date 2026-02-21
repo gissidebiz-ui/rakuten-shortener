@@ -5,7 +5,7 @@ Handles AI client creation and content generation with retry logic.
 from google import genai
 import time
 from typing import Dict, Any
-from retry_helper import metrics_log, should_retry_on_error, calculate_backoff, log_retry_attempt
+import retry_helper
 
 
 def create_ai_client(api_key: str) -> genai.Client:
@@ -39,7 +39,7 @@ def generate_with_retry(client: genai.Client, prompt: str, config: Dict[str, Any
         try:
             # Log request start
             try:
-                metrics_log("ai_request_start", {"attempt": attempt})
+                retry_helper.metrics_log("ai_request_start", {"attempt": attempt})
             except Exception:
                 pass
             
@@ -53,14 +53,14 @@ def generate_with_retry(client: genai.Client, prompt: str, config: Dict[str, Any
             # Handle successful response
             if hasattr(response, "text") and response.text:
                 try:
-                    metrics_log("ai_success", {"attempts": attempt})
+                    retry_helper.metrics_log("ai_success", {"attempts": attempt})
                 except Exception:
                     pass
                 return response.text.strip()
             else:
                 # Fallback for response without text attribute
                 try:
-                    metrics_log("ai_success", {"attempts": attempt})
+                    retry_helper.metrics_log("ai_success", {"attempts": attempt})
                 except Exception:
                     pass
                 return response.candidates[0].content.parts[0].text.strip()
@@ -70,7 +70,7 @@ def generate_with_retry(client: genai.Client, prompt: str, config: Dict[str, Any
             err_text = str(e)
             
             try:
-                metrics_log("ai_error", {"attempt": attempt, "error": err_text})
+                retry_helper.metrics_log("ai_error", {"attempt": attempt, "error": err_text})
             except Exception:
                 pass
 
@@ -78,23 +78,30 @@ def generate_with_retry(client: genai.Client, prompt: str, config: Dict[str, Any
             if attempt == max_retries:
                 print("[!] 最大リトライ到達。空の結果を返します。")
                 try:
-                    metrics_log("ai_final_failure", {"attempts": attempt, "error": err_text})
+                    retry_helper.metrics_log("ai_final_failure", {"attempts": attempt, "error": err_text})
                 except Exception:
                     pass
                 return ""
 
             # Determine if rate limit error
-            is_rate_limit = should_retry_on_error(err_text)
+            is_rate_limit = retry_helper.should_retry_on_error(err_text)
             
             if is_rate_limit:
                 try:
-                    metrics_log("ai_rate_limit", {"attempt": attempt})
+                    retry_helper.metrics_log("ai_rate_limit", {"attempt": attempt})
                 except Exception:
                     pass
 
             # Calculate and execute backoff
-            backoff, jitter, sleep_time = calculate_backoff(attempt, is_rate_limit, config)
-            log_retry_attempt(attempt, max_retries, err_text, sleep_time, backoff)
+            backoff_result = retry_helper.calculate_backoff(attempt, is_rate_limit, config)
+            # calculate_backoff may return (backoff, jitter, sleep_time) or a single sleep_time
+            if isinstance(backoff_result, tuple):
+                backoff, jitter, sleep_time = backoff_result
+            else:
+                sleep_time = backoff_result
+                backoff = None
+                jitter = None
+            retry_helper.log_retry_attempt(attempt, max_retries, err_text, sleep_time, backoff)
             time.sleep(sleep_time)
 
     return ""

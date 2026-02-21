@@ -3,6 +3,7 @@ Unit tests for retry_helper module.
 Tests retry logic, metrics logging, and backoff calculation.
 """
 import unittest
+import json
 import sys
 import os
 from unittest.mock import patch, mock_open
