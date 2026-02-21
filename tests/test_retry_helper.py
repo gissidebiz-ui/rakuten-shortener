@@ -5,7 +5,7 @@ Tests retry logic, metrics logging, and backoff calculation.
 import unittest
 import sys
 import os
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
 # Add src directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))

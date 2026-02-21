@@ -4,6 +4,7 @@ import glob
 import time
 import subprocess
 import re
+import logging
 from typing import Dict, List, Any
 from di_container import get_container, DIContainer
 from ai_helpers import generate_with_retry
@@ -23,6 +24,7 @@ class AffiliatePostGenerator:
         self.config = self.container.get_generation_policy()
         self.accounts = self.container.get_accounts()
         self.client = self.container.get_ai_client()
+        self.logger: logging.Logger = self.container.get_logger(__name__)
     
     def cleanup_html(self) -> None:
         """Remove old HTML files based on retention policy."""
@@ -50,8 +52,10 @@ class AffiliatePostGenerator:
                 try:
                     os.remove(file_path)
                     print(f"削除しました: {f} ({retention_days}日以上経過)")
+                    self.logger.info(f"Deleted old HTML file: {f}")
                 except Exception as e:
                     print(f"削除失敗: {f} - {e}")
+                    self.logger.warning(f"Failed to delete HTML file: {f} - {e}")
 
     def generate_post_text(self, product_name: str, short_url: str) -> str:
         """Generate affiliate post text.
@@ -97,13 +101,16 @@ class AffiliatePostGenerator:
 
     def generate(self) -> None:
         """Generate affiliate posts for all accounts."""
+        self.logger.info("Starting affiliate post generation")
         self.cleanup_html()
 
         input_files = glob.glob("../data/input/*_input.csv")
+        self.logger.debug(f"Found {len(input_files)} input CSV files")
 
         for input_path in input_files:
             filename = os.path.basename(input_path)
             account = filename.replace("_input.csv", "")
+            self.logger.info(f"Processing account: {account}")
 
             output_path = f"../data/output/{account}_affiliate_posts.txt"
             posts = []

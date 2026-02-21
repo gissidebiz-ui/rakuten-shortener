@@ -4,8 +4,10 @@ Provides factory functions and container for managing dependencies.
 """
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
+import logging
 from config_loader import load_generation_policy, load_secrets, load_accounts, load_themes
 from ai_helpers import create_ai_client
+from logging_provider import DefaultLoggerProvider, LoggerProvider
 
 
 class ConfigProvider(ABC):
@@ -98,11 +100,13 @@ class DIContainer:
     def __init__(
         self,
         config_provider: Optional[ConfigProvider] = None,
-        ai_client_provider: Optional[AIClientProvider] = None
+        ai_client_provider: Optional[AIClientProvider] = None,
+        logger_provider: Optional[LoggerProvider] = None
     ):
         """Initialize container with optional custom providers."""
         self.config_provider = config_provider or DefaultConfigProvider()
         self.ai_client_provider = ai_client_provider or DefaultAIClientProvider(self.config_provider)
+        self.logger_provider = logger_provider or DefaultLoggerProvider()
     
     def get_config_provider(self) -> ConfigProvider:
         """Get configuration provider."""
@@ -112,9 +116,32 @@ class DIContainer:
         """Get AI client provider."""
         return self.ai_client_provider
     
+    def get_logger_provider(self) -> LoggerProvider:
+        """Get logger provider."""
+        return self.logger_provider
+    
     def get_ai_client(self):
         """Get configured AI client."""
         return self.ai_client_provider.get_client()
+    
+    def get_logger(self, name: str) -> logging.Logger:
+        """Get configured logger.
+        
+        Args:
+            name: Logger name (typically module name)
+            
+        Returns:
+            Logger instance
+        """
+        return self.logger_provider.get_logger(name)
+    
+    def setup_file_logging(self, log_dir: str) -> None:
+        """Setup file logging.
+        
+        Args:
+            log_dir: Directory to store log files
+        """
+        self.logger_provider.setup_file_logging(log_dir)
     
     def get_generation_policy(self) -> Dict[str, Any]:
         """Convenience method to get generation policy."""

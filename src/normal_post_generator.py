@@ -1,5 +1,6 @@
 import time
 import random
+import logging
 from typing import Dict, List, Any
 from di_container import get_container, DIContainer
 from ai_helpers import generate_with_retry
@@ -19,6 +20,7 @@ class NormalPostGenerator:
         self.accounts = self.container.get_accounts()
         self.themes = self.container.get_themes()
         self.client = self.container.get_ai_client()
+        self.logger: logging.Logger = self.container.get_logger(__name__)
     
     def generate_posts_for_theme(self, theme_key: str) -> List[str]:
         """Generate posts for a single theme.
@@ -36,6 +38,7 @@ class NormalPostGenerator:
 
         for i in range(posts_per_theme):
             print(f"生成中: {theme_key} → {i+1}/{posts_per_theme}")
+            self.logger.debug(f"Generating post {i+1}/{posts_per_theme} for theme: {theme_key}")
             text = generate_with_retry(self.client, prompt, self.config["normal_post_generation"])
             text = text.replace("\n", "\\n")
             posts.append(text)
@@ -52,6 +55,7 @@ class NormalPostGenerator:
             retry_passes = self.config["normal_post_generation"]["retry_passes"]
             for rp in range(1, retry_passes + 1):
                 print(f"[再試行パス {rp}/{retry_passes}] 空の生成結果を再実行します: {len(failed_idxs)} 件")
+                self.logger.info(f"Retry pass {rp}/{retry_passes}: {len(failed_idxs)} failed posts")
                 for idx in failed_idxs[:]:
                     print(f"再試行: {theme_key} インデックス {idx+1}")
                     text = generate_with_retry(self.client, prompt, self.config["normal_post_generation"])
@@ -71,11 +75,13 @@ class NormalPostGenerator:
             theme_list = data.get("themes", [])
 
             print(f"\n=== {account} の通常ポスト生成開始 ===")
+            self.logger.info(f"Starting normal post generation for account: {account}")
 
             # Select random themes
             selected_count = self.config["normal_post_generation"]["selected_themes_per_account"]
             selected_themes = random.sample(theme_list, min(selected_count, len(theme_list)))
             print(f"選択されたテーマ: {selected_themes}")
+            self.logger.debug(f"Selected themes: {selected_themes}")
 
             all_posts = []
 
