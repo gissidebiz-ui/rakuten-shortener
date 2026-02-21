@@ -37,7 +37,9 @@ def _get_config_path(filename: str) -> str:
     # Config files are in ../config/ (parent directory's config)
     src_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(src_dir)
-    return os.path.join(root_dir, "config", filename)
+    path = os.path.join(root_dir, "config", filename)
+    # Normalize to forward slashes for test expectations
+    return path.replace("\\", "/")
 
 
 def load_secrets() -> Dict[str, Any]:

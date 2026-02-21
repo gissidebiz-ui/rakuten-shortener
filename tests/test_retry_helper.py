@@ -12,7 +12,7 @@ from unittest.mock import patch, mock_open
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from retry_helper import (
-    metrics_log, should_retry_on_error, calculate_backoff
+    metrics_log, should_retry_on_error, calculate_backoff, log_retry_attempt
 )
 
 

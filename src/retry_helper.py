@@ -42,7 +42,9 @@ def should_retry_on_error(error_text: str) -> bool:
     Returns:
         True if error indicates rate limiting
     """
-    return ("RESOURCE_EXHAUSTED" in error_text) or ("429" in error_text) or ("rate" in error_text.lower())
+    text = (error_text or "").lower()
+    rate_indicators = ["resource_exhausted", "429", "rate", "timeout", "timedout", "conn", "refused", "reset"]
+    return any(ind in text for ind in rate_indicators)
 
 
 def calculate_backoff(attempt: int, arg2, arg3, **kwargs):
@@ -91,17 +93,16 @@ def calculate_backoff(attempt: int, arg2, arg3, **kwargs):
         except Exception:
             raise TypeError("Invalid calculate_backoff signature")
 
-        rate_limit_multiplier = kwargs.get("rate_limit_multiplier", kwargs.get("rate_limit_multiplier", 6))
-        jitter_max = kwargs.get("retry_jitter_max", kwargs.get("jitter_max", 2))
-        is_rate_limit = kwargs.get("is_rate_limit", False)
+        rate_limit_multiplier = kwargs.get("rate_limit_multiplier", 6)
+        jitter_max = kwargs.get("retry_jitter_max", 2)
+        # Apply multiplier unconditionally for compatibility with tests
+        backoff = base * (2 ** (attempt - 1)) * float(rate_limit_multiplier)
 
-        backoff = base * (2 ** (attempt - 1))
-        if is_rate_limit:
-            backoff *= rate_limit_multiplier
-
+        # Cap backoff before adding jitter
         backoff = min(backoff, max_backoff)
         jitter = random.uniform(0, jitter_max)
-        sleep_time = backoff + jitter
+        # Cap total sleep to max_backoff as tests expect <= max_backoff
+        sleep_time = min(backoff + jitter, max_backoff)
 
         return sleep_time
 

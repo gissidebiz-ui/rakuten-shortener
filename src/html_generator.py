@@ -7,7 +7,7 @@ import string
 import random
 import html as html_module
 from typing import Optional
-from config_loader import load_secrets
+import config_loader
 
 
 def random_filename(length: int = 6) -> str:
@@ -94,8 +94,8 @@ def generate_short_url(
     Returns:
         str: Short URL in format {BASE_URL}/{filename}.html
     """
-    secrets = load_secrets()
-    BASE_URL = secrets["base_url"]
+    secrets = config_loader.load_secrets()
+    BASE_URL = secrets.get("base_url", "")
 
     filename = random_filename()
     create_redirect_html(affiliate_url, filename, product_name, image_url, output_dir)
