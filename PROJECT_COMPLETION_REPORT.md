@@ -233,21 +233,25 @@ config_loader  ai_helpers + retry_helper  logging_provider
 ## 📖 主要モジュール説明
 
 ### di_container.py
+
 - **目的**: 全アプリケーションの依存関係管理
 - **機能**: Config, AI, Logger の３つのプロバイダーをカプセル化
 - **パターン**: Factory + Singleton
 
 ### config_loader.py
+
 - **目的**: YAML設定の一元化
 - **機能**: generation_policy, secrets, accounts, themes の読み込みと型安全なキャッシング
 - **型**: `Dict[str, Any]` を返却
 
 ### logging_provider.py
+
 - **目的**: ロギング機構の抽象化
 - **機能**: コンソール + ファイルロギング、日付別ログローテーション
 - **型**: `logging.Logger` インスタンスの提供
 
 ### retry_helper.py
+
 - **目的**: AI API呼び出しの信頼性向上
 - **機能**: 指数バックオフ、レート制限対応、メトリクスロギング
 - **型**: `Tuple[float, float, float]` のバックオフ値を返却
