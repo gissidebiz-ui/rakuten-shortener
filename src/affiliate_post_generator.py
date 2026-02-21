@@ -99,47 +99,62 @@ class AffiliatePostGenerator:
                     print(f"削除失敗: {f} - {e}")
                     self.logger.warning(f"HTML ファイルの削除に失敗しました: {f} - {e}")
 
-    def generate_post_text(self, product_name: str, short_url: str) -> str:
-        """アフィリエイト用ポスト文案を生成します。
+    def generate_post_text(self, product_name: str, short_url: str, price: str = "", review_average: str = "0.0", review_count: str = "0", point_rate: str = "1") -> str:
+        """追加情報を活用して、より魅力的なアフィリエイト用ポスト文案を生成します。
         
         Args:
             product_name: 商品名
             short_url: 短縮風のリダイレクト URL
+            price: 価格情報
+            review_average: レビュー平均点
+            review_count: レビュー件数
+            point_rate: ポイント倍率
             
         Returns:
-            生成されたポスト文案（改行コード含む）
+            生成されたポスト文案
         """
-        # 商品名が長すぎる場合は、プロンプトの制限に合わせてカット
+        # 商品名が長すぎる場合はカット
         max_name_len = self.config["affiliate_post_generation"].get("max_product_name_length", 80)
         safe_name = product_name[:max_name_len]
 
+        # 追加情報のサマリを作成
+        info_summary = []
+        if price:
+            info_summary.append(f"価格: {price}円")
+        if float(review_average) > 0:
+            info_summary.append(f"評価: ★{review_average}（{review_count}件）")
+        if int(point_rate) > 1:
+            info_summary.append(f"ポイント: {point_rate}倍")
+        
+        extra_info_text = " / ".join(info_summary)
+
         prompt = f"""
-以下の情報から、X（旧Twitter）向けの投稿文を作成してください。
-※文章の中にURLは絶対に含めないでください。
+以下の情報から、X（旧Twitter）向けの「思わずクリックしたくなる」魅力的な投稿文を作成してください。
 
 【商品名】
 {safe_name}
 
+【補足情報】
+{extra_info_text}
+
 条件：
 ・本文は50文字以内
-・売れそうなキャッチコピー寄り
-・強すぎず自然なテンション
-・絵文字は1つだけ
+・価格、高評価、ポイント還元などの「お得感・安心感」を1つ以上盛り込む
+・宣伝臭を抑えつつ、利用者のメリット（「これいい！」「助かる」等）を強調
+・絵文字は1つまで
 ・短縮URLは文末に置く
-・宣伝臭くしない
 ・1行で完結（改行しない）
 """
         text = generate_with_retry(self.client, prompt, self.config["affiliate_post_generation"])
         
-        # AI が勝手に URL を出力に含める場合があるため、正規表現で排除
+        # AI が勝手に URL を出力に含める場合があるため排除
         text = re.sub(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', '', text).strip()
         
-        # ハッシュタグの前に強制的に改行を挿入して見栄えを整える
+        # ハッシュタグの前に強制的に改行を挿入（設定にあれば）
         if "#" in text:
             text = text.replace(" #", "\\n#").replace("　#", "\\n#")
             text = re.sub(r'([^\\n])#', r'\1\\n#', text)
 
-        # 最終的な構成: 本文 + \n\n + URL
         return f"{text}\\n\\n{short_url}"
 
     def generate(self) -> None:
@@ -170,12 +185,27 @@ class AffiliatePostGenerator:
                         product_name = row[0]
                         affiliate_url = row[1]
                         image_url = row[2]
+                        price = row[3] if len(row) > 3 else ""
+                        review_avg = row[4] if len(row) > 4 else "0.0"
+                        review_cnt = row[5] if len(row) > 5 else "0"
+                        point_rate = row[6] if len(row) > 6 else "1"
 
-                        # OGP 対応 HTML を生成し、短縮 URL を取得
-                        short_url = generate_short_url(affiliate_url, product_name, image_url)
+                        # OGP 対応 HTML を生成し、短縮 URL を取得（HTMLタイトルにも反映させる）
+                        short_url = generate_short_url(
+                            affiliate_url, 
+                            product_name, 
+                            image_url,
+                            price=price,
+                            review_average=review_avg,
+                            point_rate=point_rate
+                        )
                         entries.append({
                             "product_name": product_name,
                             "short_url": short_url,
+                            "price": price,
+                            "review_avg": review_avg,
+                            "review_cnt": review_cnt,
+                            "point_rate": point_rate,
                             "post": None
                         })
                     except Exception as e:
@@ -184,11 +214,18 @@ class AffiliatePostGenerator:
                         traceback.print_exc()
                         continue
 
-            # 各商品に対して AI 投稿文を並列生成（最大5並列でレート制限に配慮）
+            # 各商品に対して AI 投稿文を並列生成
             with ThreadPoolExecutor(max_workers=5) as executor:
                 def process_entry(entry):
                     try:
-                        return self.generate_post_text(entry["product_name"], entry["short_url"])
+                        return self.generate_post_text(
+                            entry["product_name"], 
+                            entry["short_url"],
+                            price=entry["price"],
+                            review_average=entry["review_avg"],
+                            review_count=entry["review_cnt"],
+                            point_rate=entry["point_rate"]
+                        )
                     except Exception as ex:
                         self.logger.error(f"生成エラー: {entry['product_name']} - {ex}")
                         return "[AIエラー] 生成に失敗しました"

@@ -31,7 +31,10 @@ def create_redirect_html(
     filename: str,
     title: str = "商品詳細はこちら",
     image_url: str = "",
-    output_dir: str = "../html"
+    output_dir: str = "../html",
+    price: str = "",
+    review_average: str = "0.0",
+    point_rate: str = "1"
 ) -> None:
     """
     SNS でのプレビュー（OGP）に対応したリダイレクト HTML ページを作成します。
@@ -39,15 +42,31 @@ def create_redirect_html(
     Args:
         url: 転送先のリダイレクト URL
         filename: 保存するファイル名（拡張子なし）
-        title: OGP タグに使用するページタイトル
+        title: OGP タグに使用する商品名（ベース）
         image_url: OGP タグ（og:image）に使用する画像 URL
         output_dir: HTML ファイルを保存する出力ディレクトリ
+        price: 価格情報
+        review_average: レビュー評価点
+        point_rate: ポイント倍率
     """
+    # 魅力を伝えるためのプレフィックスを作成
+    prefix_elements = []
+    if float(review_average) >= 4.0:
+        prefix_elements.append(f"★{review_average}")
+    if int(point_rate) > 1:
+        prefix_elements.append(f"pt{point_rate}倍")
+    
+    prefix = f"【{' / '.join(prefix_elements)}】" if prefix_elements else ""
+    
     # XSS を防止するため、属性値をエスケープします。
-    safe_title = html_module.escape(title)
+    # タイトルを装飾 (例: 【★4.8】商品名 - 楽天)
+    decorated_title = f"{prefix}{title}"
+    safe_title = html_module.escape(decorated_title)
     safe_image_url = html_module.escape(image_url) if image_url else ""
     
     og_description = f"楽天 - {safe_title}"
+    if price:
+        og_description = f"価格: {price}円 | {og_description}"
     
     # HTML コンテンツのテンプレート生成
     html_content = f"""<!DOCTYPE html>
@@ -88,7 +107,10 @@ def generate_short_url(
     affiliate_url: str,
     product_name: str,
     image_url: str,
-    output_dir: str = "../html"
+    output_dir: str = "../html",
+    price: str = "",
+    review_average: str = "0.0",
+    point_rate: str = "1"
 ) -> str:
     """
     リダイレクト HTML を生成し、対応する「短縮風 URL」を返します。
@@ -98,6 +120,9 @@ def generate_short_url(
         product_name: OGP タイトルに使用する商品名
         image_url: 商品画像 URL
         output_dir: HTML ファイルを保存するディレクトリ
+        price: 価格情報
+        review_average: レビュー評価点
+        point_rate: ポイント倍率
     
     Returns:
         str: 公開用の URL フォーマット {BASE_URL}/{filename}.html
@@ -107,6 +132,15 @@ def generate_short_url(
 
     # ランダムなファイル名を決定して HTML を生成
     filename = random_filename()
-    create_redirect_html(affiliate_url, filename, product_name, image_url, output_dir)
+    create_redirect_html(
+        affiliate_url, 
+        filename, 
+        product_name, 
+        image_url, 
+        output_dir,
+        price=price,
+        review_average=review_average,
+        point_rate=point_rate
+    )
     
     return f"{BASE_URL}/{filename}.html"

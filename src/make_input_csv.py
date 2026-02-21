@@ -68,7 +68,7 @@ class InputCSVGenerator:
                 result.append(entry)
         return result
 
-    def fetch_items(self, url: str, genre_name: str) -> List[Tuple[str, str, str]]:
+    def fetch_items(self, url: str, genre_name: str) -> List[Tuple[Any, ...]]:
         """指定された API URL からアイテム情報を取得します。
         
         Args:
@@ -76,7 +76,7 @@ class InputCSVGenerator:
             genre_name: ジャンル名（カテゴリ名）
             
         Returns:
-            (タイトル, 商品URL, 画像URL) のタプルのリスト
+            (タイトル, 商品URL, 画像URL, 価格, レビュー平均, レビュー数, ポイント倍率) のタプルのリスト
         """
         # 1. URL から 'hits' パラメータ（取得件数）を抽出
         parsed_url = urlparse(url)
@@ -186,8 +186,14 @@ class InputCSVGenerator:
                     else:
                         image_url = images[0]
 
+            # --- 価格・レビュー・ポイント情報の取得 ---
+            price = base_info.get("itemPrice") or base_info.get("hotelMinCharge") or base_info.get("price") or ""
+            review_average = base_info.get("reviewAverage") or 0.0
+            review_count = base_info.get("reviewCount") or 0
+            point_rate = base_info.get("pointRate") or 1
+
             if title and url_link:
-                results.append((title, url_link, image_url))
+                results.append((title, url_link, image_url, price, review_average, review_count, point_rate))
 
         return results
 
@@ -240,8 +246,8 @@ class InputCSVGenerator:
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 with open(output_path, "w", encoding="utf-8", newline="") as f:
                     writer = csv.writer(f)
-                    for title, url_link, image_url in account_items:
-                        writer.writerow([title, url_link, image_url])
+                    for row in account_items:
+                        writer.writerow(row)
                 print(f"  [SUCCESS] {output_path} を生成（合計: {len(account_items)}件）")
             except Exception as e:
                 print(f"  [ERROR] ファイル保存失敗: {e}")
