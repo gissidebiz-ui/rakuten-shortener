@@ -8,8 +8,10 @@ import random
 import html as html_module
 from typing import Optional
 import config_loader
-# Provide a module-level alias for tests that patch html_generator.load_secrets
-load_secrets = config_loader.load_secrets
+
+# Provide a module-level wrapper so tests can patch either
+def load_secrets():
+    return config_loader.load_secrets()
 
 
 def random_filename(length: int = 6) -> str:
