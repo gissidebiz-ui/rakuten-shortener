@@ -11,7 +11,6 @@ from typing import Dict, List, Any
 from di_container import get_container, DIContainer
 from ai_helpers import generate_with_retry
 from html_generator import generate_short_url
-from concurrent.futures import ThreadPoolExecutor
 
 
 class AffiliatePostGenerator:
@@ -184,19 +183,9 @@ class AffiliatePostGenerator:
                         traceback.print_exc()
                         continue
 
-            # 各商品に対して AI 投稿文を並列生成（最大5並列でレート制限に配慮）
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                def process_entry(entry):
-                    try:
-                        return self.generate_post_text(entry["product_name"], entry["short_url"])
-                    except Exception as ex:
-                        self.logger.error(f"生成エラー: {entry['product_name']} - {ex}")
-                        return "[AIエラー] 生成に失敗しました"
-
-                # 並列実行して結果を格納
-                posts = list(executor.map(process_entry, entries))
-                for i, post in enumerate(posts):
-                    entries[i]["post"] = post
+            # 各商品に対して AI 投稿文を生成
+            for e in entries:
+                e["post"] = self.generate_post_text(e["product_name"], e["short_url"])
 
             # 失敗（空文字等）したエントリの再試行処理
             def _is_failed(p: str | None) -> bool:

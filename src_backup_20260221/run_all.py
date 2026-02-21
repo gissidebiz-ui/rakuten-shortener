@@ -7,9 +7,6 @@ import yaml  # type: ignore
 from datetime import datetime, timedelta
 from merge_posts import PostMerger
 from di_container import get_container
-from make_input_csv import InputCSVGenerator
-from normal_post_generator import NormalPostGenerator
-from affiliate_post_generator import AffiliatePostGenerator
 
 # ================================
 # 日別ログファイルのパス生成
@@ -85,7 +82,14 @@ def load_accounts():
 # ================================
 # サブスクリプトの実行処理
 # ================================
-# run_script 関数は直接呼び出しに変更するため削除
+def run_script(script_name):
+    """別の Python スクリプトを子プロセスとして実行し、結果をログに記録します。"""
+    log(f"=== {script_name} の実行を開始します ===")
+    result = subprocess.run(["python", script_name])
+    if result.returncode != 0:
+        log(f"ERROR: {script_name} の実行中にエラーが発生しました。")
+        exit(1)
+    log(f"=== {script_name} が正常に完了しました ===")
 
 # ================================
 # メイン処理フロー
@@ -109,19 +113,11 @@ def main():
         pass
 
     # 1. 楽天 API から商品情報を取得して CSV 作成
-    log("=== make_input_csv.py の実行を開始します ===")
-    InputCSVGenerator().generate()
-    log("=== make_input_csv.py が正常に完了しました ===")
-
+    run_script("make_input_csv.py")
     # 2. AI を用いた通常ポストの生成
-    log("=== normal_post_generator.py の実行を開始します ===")
-    NormalPostGenerator().generate()
-    log("=== normal_post_generator.py が正常に完了しました ===")
-
+    run_script("normal_post_generator.py")
     # 3. AI を用いたアフィリエイトポストの生成
-    log("=== affiliate_post_generator.py の実行を開始します ===")
-    AffiliatePostGenerator().generate()
-    log("=== affiliate_post_generator.py が正常に完了しました ===")
+    run_script("affiliate_post_generator.py")
 
     # 4. 生成された 2 種類のポストをマージ（DI コンテナを利用）
     merger = PostMerger()

@@ -2,7 +2,6 @@ import os
 import csv
 import requests  # type: ignore
 import time
-from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse, parse_qs
 from typing import Dict, List, Tuple, Any
 from di_container import get_container, DIContainer
@@ -207,26 +206,11 @@ class InputCSVGenerator:
             print("!" * 50 + "\n")
             account_items = []
 
-            # ジャンル名とURLのペアをリスト化
-            genre_tasks = list(genres.items())
-            
-            # APIの負荷制限を考慮し、アカウント内のジャンル取得を最大3並列で実行
-            # (楽天APIの1秒に1リクエスト制限を尊重しつつスループットを上げる)
-            with ThreadPoolExecutor(max_workers=3) as executor:
-                # genre_name, url の順でタプルを受け取る fetch_items_wrapper を定義
-                def fetch_items_wrapper(genre_info):
-                    name, url = genre_info
-                    print(f"  {name} を取得中… (URL: {url[:50]}...)")
-                    # 各スレッド内で適度な待機を入れ、APIの密度を分散
-                    time.sleep(0.5) 
-                    return self.fetch_items(url, name)
-
-                # 並列実行
-                future_results = list(executor.map(fetch_items_wrapper, genre_tasks))
-                
-                for items in future_results:
-                    print(f"    -> {len(items)}件取得しました")
-                    account_items.extend(items)
+            for genre_name, url in genres.items():
+                print(f"  {genre_name} を取得中… (URL: {url[:50]}...)")
+                items = self.fetch_items(url, genre_name)
+                print(f"    -> {len(items)}件取得しました")
+                account_items.extend(items)
 
             if not account_items:
                 print(f"  [SKIP] 取得データが0件のため保存しません")

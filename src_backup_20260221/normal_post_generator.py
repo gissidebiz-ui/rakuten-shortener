@@ -1,7 +1,6 @@
 import time
 import random
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Any
 from di_container import get_container, DIContainer
 from ai_helpers import generate_with_retry
@@ -35,19 +34,16 @@ class NormalPostGenerator:
         prompt = self.themes[theme_key]
         posts = []
         
-        def generate_single_post(index):
-            print(f"生成中: {theme_key} → {index+1}/{posts_per_theme}")
-            self.logger.debug(f"テーマ '{theme_key}' のポスト生成中 ({index+1}/{posts_per_theme})")
-            text = generate_with_retry(self.client, prompt, self.config["normal_post_generation"])
-            # CSV 保存時に 1 行に収めるため、改行をリテラル表現に変換
-            return text.replace("\n", "\\n")
-
         # 設定ファイルからテーマあたりの生成件数を取得
         posts_per_theme = self.config["normal_post_generation"]["posts_per_theme"]
 
-        # AIのレート制限を考慮し、並列数を制限（例：最大5並列）
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            posts = list(executor.map(generate_single_post, range(posts_per_theme)))
+        for i in range(posts_per_theme):
+            print(f"生成中: {theme_key} → {i+1}/{posts_per_theme}")
+            self.logger.debug(f"テーマ '{theme_key}' のポスト生成中 ({i+1}/{posts_per_theme})")
+            text = generate_with_retry(self.client, prompt, self.config["normal_post_generation"])
+            # CSV 保存時に 1 行に収めるため、改行をリテラル表現に変換
+            text = text.replace("\n", "\\n")
+            posts.append(text)
 
         # 生成に失敗（空文字やエラーメッセージ）したポストの再試行処理
         def _is_failed(p: str | None) -> bool:
