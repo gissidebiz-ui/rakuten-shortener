@@ -1,0 +1,48 @@
+ぴょん:
+  genres:
+    # 各5件(URLの後ろで指定しているよ hits=5)ずつ、計15件の商品を取得
+    総合: "https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404?keyword=%E4%BA%88%E7%B4%84&booksGenreId=000&availability=5&sort=sales&hits=5"
+    CD: "https://app.rakuten.co.jp/services/api/BooksCD/Search/20170404?title=%E9%99%90%E5%AE%9A&booksGenreId=002&availability=5&sort=sales&hits=5"
+    ゲーム: "https://app.rakuten.co.jp/services/api/BooksGame/Search/20170404?title=%E7%89%B9%E5%85%B8&booksGenreId=006&availability=5&sort=sales&hits=5"
+  themes:
+    - 日常の気づき
+    - 生活習慣
+    - 健康・美容
+    - 子育て・教育
+    - ファッション
+    - トレンドアンテナ
+  affiliate:
+    template: normal
+
+ツイてる:
+  genres:
+    # 各5件(URLの後ろで指定しているよ hits=5)ずつ、計15件の商品を取得
+    DVD: "https://app.rakuten.co.jp/services/api/BooksDVD/Search/20170404?booksGenreId=003&sort=standard&availability=5&limitedFlag=1&hits=5"
+    雑誌: "https://app.rakuten.co.jp/services/api/BooksMagazine/Search/20170404?booksGenreId=007604001&sort=sales&availability=5&hits=5"
+    ゲーム: "https://app.rakuten.co.jp/services/api/BooksGame/Search/20170404?title=%E7%89%B9%E5%85%B8&booksGenreId=006&availability=5&sort=sales&hits=5"
+  themes:
+    - AI豆知識
+    - お金の小ネタ
+    - 趣味
+    - ライフハック
+    - IT・テクノロジー
+    - お金・節約術
+  affiliate:
+    template: normal
+
+さくら:
+  genres:
+    # 各5件(URLの後ろで指定しているよ hits=5)ずつ、計15件の商品を取得
+    総合ランキング: "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?genreId=0&hits=5"
+    美容コスメ: "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?genreId=100371&hits=5"
+    スイーツ: "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?genreId=551167&hits=5"
+  themes:
+    - 名言と一言
+    - ユーモア
+    - グルメ・レシピ
+    - 旅行・観光スポット
+    - 前向きメッセージ
+    - プチ贅沢
+    - 癒しのひととき
+  affiliate:
+    template: sakura
