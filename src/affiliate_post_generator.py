@@ -2,6 +2,7 @@ import os
 import csv
 import glob
 import time
+import random
 import subprocess
 import re
 import logging
@@ -207,9 +208,8 @@ class AffiliatePostGenerator:
                             print(f"[ERROR] 再試行で失敗: {e['product_name']}")
 
             # Write output
-            for e in entries:
-                posts.append(e.get("post") or "")
-
+            posts = [e.get("post") or "" for e in entries]
+            random.shuffle(posts)
             with open(output_path, "w", encoding="utf-8") as f:
                 for p in posts:
                     safe_post = p.replace("\\\\n", "\\n")

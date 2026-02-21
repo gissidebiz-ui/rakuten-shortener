@@ -82,13 +82,12 @@ class NormalPostGenerator:
             selected_themes = random.sample(theme_list, min(selected_count, len(theme_list)))
             print(f"選択されたテーマ: {selected_themes}")
             self.logger.debug(f"Selected themes: {selected_themes}")
-
             all_posts = []
-
             for theme in selected_themes:
                 posts = self.generate_posts_for_theme(theme)
                 all_posts.extend(posts)
 
+            random.shuffle(all_posts)
             output_path = f"../data/output/{account}_posts.txt"
 
             with open(output_path, "w", encoding="utf-8") as f:
