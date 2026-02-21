@@ -52,8 +52,9 @@ class NormalPostGenerator:
             text = re.sub(r'上記例を参考にして.*', '', text)
             text = re.sub(r'他に\d+パターン.*', '', text)
             
-            # 3. プレースホルダ（〇〇、△△）が含まれる場合はエラーとして扱う
-            if "〇" in text or "△" in text or "XX" in text:
+            # 3. プレースホルダが含まれる場合はエラーとして扱う
+            placeholder_pattern = r'\[.*?\]|【.*?】|〇{2,}|○{2,}|◯{2,}|[X]{2,}|[x]{2,}|[△]{2,}|[Δ]{2,}'
+            if re.search(placeholder_pattern, text):
                 return "[AIエラー] プレースホルダが含まれています"
                 
             # 4. 外国語が多すぎる場合のエラー判定
