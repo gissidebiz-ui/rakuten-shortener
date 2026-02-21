@@ -7,6 +7,7 @@ This directory contains GitHub Actions workflows for automated testing, code qua
 ## Workflows
 
 ### 1. **tests.yml** - Unit Tests & Type Checking
+
 - **Trigger**: Push to `main` or PR to `main` (when `src/` or `tests/` change)
 - **Matrix**: Python 3.11, 3.12
 - **Checks**:
@@ -17,6 +18,7 @@ This directory contains GitHub Actions workflows for automated testing, code qua
 - **Status**: ✓ Continues on error (warning-level checks)
 
 ### 2. **validate-pipeline.yml** - Pipeline Integration Test
+
 - **Trigger**: Push to `main` or PR to `main` (when `src/` or `config/` change)
 - **Runtime**: Python 3.12, 30-minute timeout
 - **Checks**:
@@ -27,6 +29,7 @@ This directory contains GitHub Actions workflows for automated testing, code qua
 - **Purpose**: Ensures pipeline components work together
 
 ### 3. **lint.yml** - Code Quality & Linting
+
 - **Trigger**: Push to `main` or PR to `main` (when `src/` change)
 - **Tools**:
   - black (code formatting)
@@ -37,7 +40,7 @@ This directory contains GitHub Actions workflows for automated testing, code qua
 
 ## Architecture
 
-```
+```bash
 .github/workflows/
 ├── tests.yml              # Unit tests + type checking
 ├── validate-pipeline.yml  # Integration test
@@ -51,7 +54,7 @@ For production deployment, add these secrets to GitHub repository settings:
 - `GOOGLE_API_KEY`: Google Generative AI API key
 - `GITHUB_TOKEN`: GitHub API token (auto-provided by Actions)
 
-# Local Testing
+<!-- # Local Testing -->
 
 Test workflows locally before pushing:
 
@@ -70,11 +73,13 @@ act -l
 ## Integration with Development
 
 ### Adding New Tests
+
 1. Create test file in `tests/`
 2. Workflows auto-detect and run
 3. Coverage reports generated
 
 ### Failing Tests
+
 1. Fix locally: `python -m pytest tests/ -v`
 2. Pre-commit: `python -m mypy src/ --ignore-missing-imports`
 3. Push: Workflows verify again
@@ -82,18 +87,19 @@ act -l
 ### Skipping Workflow Triggers
 
 Add `[skip ci]` to commit message:
+
 ```bash
 git commit -m "docs: update README [skip ci]"
 ```
 
 ## Performance
 
-| Workflow | Avg Duration | Matrix Jobs |
-|----------|-------------|------------|
-| tests.yml | 2-3 min | 2 (3.11, 3.12) |
-| validate-pipeline.yml | 1-2 min | 1 |
-| lint.yml | 1 min | 1 |
-| **Total** | ~4-6 min | - |
+| Workflow              | Avg Duration | Matrix Jobs    |
+| --------------------- | ------------ | -------------- |
+| tests.yml             | 2-3 min      | 2 (3.11, 3.12) |
+| validate-pipeline.yml | 1-2 min      | 1              |
+| lint.yml              | 1 min        | 1              |
+| **Total**             | ~4-6 min     | -              |
 
 ## Conventions
 

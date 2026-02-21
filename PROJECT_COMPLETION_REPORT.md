@@ -31,7 +31,7 @@ YusukeBOT X 自動投稿システムの大規模 SOLID パターン リファク
 
 ## 📁 最終プロジェクト構成
 
-```
+```bash
 rktn/
 ├── .github/
 │   └── workflows/               # ✓ CI/CD パイプライン
@@ -186,7 +186,7 @@ GitHub Actions トリガー:
 
 ## 📝 Git コミット履歴
 
-```
+```bash
 e2f4a1b - chore: final cleanup and AI output auto-formatting (Finished)
 bfb758c - feat: implement Logger dependency injection pattern (Phase 7)
 07cea70 - refactor: apply DI container to make_input_csv and merge_posts modules (Phase 6)
@@ -204,7 +204,7 @@ ca148e4 - feat: add comprehensive unit tests for new modules (Phase 2)
 
 ## 🔍 アーキテクチャ図
 
-```
+```bash
 ┌─────────────────────────────────────────────────────────┐
 │                    run_all.py                           │
 │             (パイプラインオーケストレーション)              │

@@ -20,7 +20,8 @@ cp config/secrets.yaml.template config/secrets.yaml
 ### 必要な API キーの取得
 
 #### Google Generative AI API
-- **URL**: https://makersuite.google.com/app/apikey
+
+<!-- - **URL**: https://makersuite.google.com/app/apikey -->
 - **手順**：
   1. Google Account でログイン
   2. "Create API Key" をクリック
@@ -28,14 +29,16 @@ cp config/secrets.yaml.template config/secrets.yaml
   4. `config/secrets.yaml` の `google_api_key` に貼り付け
 
 #### 楽天 API (Books & Ichiba)
-- **URL**: https://webservice.rakuten.co.jp/app/
+
+<!-- - **URL**: https://webservice.rakuten.co.jp/app/ -->
 - **手順**：
   1. 楽天デベロッパーアカウントでログイン
   2. Application ID を取得
   3. `config/secrets.yaml` の `rakuten_application_id` に設定
 
 #### 楽天アフィリエイト ID
-- **URL**: https://affiliate.rakuten.co.jp/
+
+<!-- - **URL**: https://affiliate.rakuten.co.jp/ -->
 - **手順**：
   1. 楽天アフィリエイトアカウントでログイン
   2. 自分のアフィリエイト ID を確認
@@ -156,6 +159,7 @@ git push --force-with-lease
    - git push --force-with-lease で強制反映
 
 3. **Git 履歴全体を削除**
+
    ```bash
    git log --all --full-history -- config/secrets.yaml
    # 上記で削除対象のコミットを確認してから削除
