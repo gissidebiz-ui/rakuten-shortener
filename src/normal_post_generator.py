@@ -52,6 +52,8 @@ class NormalPostGenerator:
             text = re.sub(r'他に\d+パターン.*', '', text)
             
             # ===== Step 3: \\n のノーマライズ =====
+            # AI が \\n（二重エスケープ）を出力する場合があるため \n に統一
+            text = text.replace("\\\\n", "\\n")
             while "\\n\\n\\n" in text:
                 text = text.replace("\\n\\n\\n", "\\n\\n")
             while text.startswith("\\n"):

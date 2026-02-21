@@ -164,7 +164,9 @@ class AffiliatePostGenerator:
         text = re.sub(r'上記例を参考にして.*', '', text)
         text = re.sub(r'他に\d+パターン.*', '', text)
         
-        # ===== Step 4: \\n のノーマライズ（重複排除） =====
+        # ===== Step 4: \\n のノーマライズ =====
+        # AI が \\n（二重エスケープ）を出力する場合があるため \n に統一
+        text = text.replace("\\\\n", "\\n")
         # \\n が3つ以上連続する場合を \\n\\n に圧縮
         while "\\n\\n\\n" in text:
             text = text.replace("\\n\\n\\n", "\\n\\n")
