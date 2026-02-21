@@ -1,0 +1,56 @@
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEBUG: ACCOUNT = ぴょん
+!!! DEBUG: GENRES  = ['総合', 'CD', 'ゲーム', 'トラベル', 'ディズニー', 'USJ']
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  総合 を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksTotal/...)
+    -> 5件取得しました
+  CD を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksCD/Sea...)
+    -> 5件取得しました
+  ゲーム を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksGame/S...)
+    -> 5件取得しました
+  トラベル を取得中… (URL: https://app.rakuten.co.jp/services/api/Travel/Hote...)
+    [DEBUG] トラベル: raw_items count = 1
+    [DEBUG] トラベル: first item keys = dict_keys(['Ranking'])
+    [DEBUG] トラベル: unique_items count = 0
+    -> 0件取得しました
+  ディズニー を取得中… (URL: https://app.rakuten.co.jp/services/api/Travel/Keyw...)
+    [DEBUG] ディズニー: raw_items count = 2
+    [DEBUG] ディズニー: first item keys = dict_keys(['hotel'])
+    [DEBUG] ディズニー: unique_items count = 0
+    -> 0件取得しました
+  USJ を取得中… (URL: https://app.rakuten.co.jp/services/api/Travel/Keyw...)
+    [DEBUG] USJ: raw_items count = 2
+    [DEBUG] USJ: first item keys = dict_keys(['hotel'])
+    [DEBUG] USJ: unique_items count = 0
+    -> 0件取得しました
+  [ERROR] ファイル保存失敗: [Errno 2] No such file or directory: '../data/input/ぴょん_input.csv'
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEBUG: ACCOUNT = ツイてる
+!!! DEBUG: GENRES  = ['DVD', '雑誌', 'ゲーム']
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  DVD を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksDVD/Se...)
+    -> 5件取得しました
+  雑誌 を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksMagazi...)
+    -> 5件取得しました
+  ゲーム を取得中… (URL: https://app.rakuten.co.jp/services/api/BooksGame/S...)
+    -> 5件取得しました
+  [ERROR] ファイル保存失敗: [Errno 2] No such file or directory: '../data/input/ツイてる_input.csv'
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEBUG: ACCOUNT = さくら
+!!! DEBUG: GENRES  = ['総合ランキング', '美容コスメ', 'スイーツ']
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  総合ランキング を取得中… (URL: https://app.rakuten.co.jp/services/api/IchibaItem/...)
+    -> 5件取得しました
+  美容コスメ を取得中… (URL: https://app.rakuten.co.jp/services/api/IchibaItem/...)
+    -> 5件取得しました
+  スイーツ を取得中… (URL: https://app.rakuten.co.jp/services/api/IchibaItem/...)
+    -> 5件取得しました
+  [ERROR] ファイル保存失敗: [Errno 2] No such file or directory: '../data/input/さくら_input.csv'
+
+すべてのアカウントの処理が完了しました！

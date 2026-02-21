@@ -1,3 +1,4 @@
+import os
 import csv
 import requests  # type: ignore
 import time
@@ -36,15 +37,35 @@ class InputCSVGenerator:
         result = []
 
         for entry in items:
-            # APIの種類によって Item 階層の有無がある場合を考慮
-            item = entry.get("Item", entry)
+            # APIの種類によって 'Item' または 'Hotel' 、'hotel'、'Ranking' 階層の有無がある
+            # 共通のタイトル抽出ロジックで重複チェック
+            item = entry.get("Item") or entry.get("Hotel") or entry.get("hotel") or entry.get("Ranking") or entry
+            
+            # 抽出対象がリストの場合（楽天トラベル KeywordSearch 等）
+            base_info = {}
+            if isinstance(item, list):
+                for sub in item:
+                    if "hotelBasicInfo" in sub or "basicInfo" in sub:
+                        base_info = sub.get("hotelBasicInfo") or sub.get("basicInfo")
+                        break
+            elif isinstance(item, dict) and "Ranking" in entry: # ランキング
+                hotels = item.get("hotels", [])
+                if hotels and isinstance(hotels, list):
+                    h_item = hotels[0].get("hotel", {})
+                    if isinstance(h_item, list):
+                        for sub in h_item:
+                            if "hotelBasicInfo" in sub or "basicInfo" in sub:
+                                base_info = sub.get("hotelBasicInfo") or sub.get("basicInfo")
+                                break
+            else:
+                base_info = item.get("hotelBasicInfo") or item.get("basicInfo") or item
             
             # キーをタイトル（または商品名）に統一して重複チェック
-            title = item.get("title") or item.get("itemName", "")
+            title = base_info.get("hotelName") or base_info.get("itemName") or base_info.get("title", "")
             
             if title and title not in seen:
                 seen.add(title)
-                result.append(item)
+                result.append(entry)
         return result
 
     def fetch_items(self, url: str, genre_name: str) -> List[Tuple[str, str, str]]:
@@ -90,6 +111,7 @@ class InputCSVGenerator:
             except Exception as e2:
                 print(f"  [ERROR] APIリクエスト失敗: {e} / retry with headers failed: {e2}")
                 return []
+        
 
         # 3. データの抽出（新旧APIのレスポンス構造に対応）
         raw_items = []
@@ -98,6 +120,14 @@ class InputCSVGenerator:
                 raw_items = data.get("Items", [])
             elif "items" in data:
                 raw_items = data.get("items", [])
+            if "Rankings" in data: # 楽天トラベルランキングAPI対応
+                # Rankings はリストで、各要素に 'Ranking' -> 'hotels' がある
+                # これを1つのホテルごとに平坦化する
+                for r in data.get("Rankings", []):
+                    hotels = r.get("Ranking", {}).get("hotels", [])
+                    raw_items.extend(hotels)
+            elif "hotels" in data: # 楽天トラベルキーワード検索API対応
+                raw_items = data.get("hotels", [])
             elif "hits" in data and isinstance(data.get("hits"), list):
                 raw_items = data.get("hits", [])
             elif "result" in data and isinstance(data.get("result"), dict) and "items" in data.get("result"):
@@ -112,24 +142,56 @@ class InputCSVGenerator:
         unique_items = self.remove_dup(raw_items)
 
         results = []
-        for item in unique_items:
+        for entry in unique_items:
             # 指定された件数（hits）に達したらそのURLの取得を終了
             if len(results) >= target_count:
                 break
                 
-            # ランキングAPIは 'itemName'、Books検索APIは 'title'
-            title = item.get("itemName") or item.get("title", "")
-            url_link = item.get("affiliateUrl", "")
+            # APIの種類によって 'Item' または 'Hotel' 階層の有無がある
+            # 楽天トラベルランキング: Rankings -> [ { Ranking: { hotels: [ { hotel: [ { basicInfo: ... } ] } ] } } ] ... いや、legacyコードを見ると違う
+            # legacyコード: item = result['Rankings'][i]['Ranking']['hotels'] -> item[idx] は {'hotel': [ {'hotelBasicInfo': ...}, {'hotelRatingInfo': ...} ] }
+            # KeywordSearch: result['hotels'][i]['hotel'][idx]
+            
+            # 手順:
+            # 1. 'Ranking' 階層があれば剥がす
+            if "Ranking" in entry:
+                # ランキングの場合は entry['Ranking']['hotels'] がリスト
+                hotels_list = entry["Ranking"].get("hotels", [])
+                # ここでは1つのホテル情報を扱いたいので、もしリストなら最初の1つを対象にする（通常1つずつ入っている想定）
+                if hotels_list and isinstance(hotels_list, list):
+                    item_data = hotels_list[0].get("hotel", entry)
+                else:
+                    item_data = entry
+            else:
+                item_data = entry.get("hotel") or entry.get("Hotel") or entry.get("Item") or entry
 
-            # --- 画像URL取得の安全な書き方（新旧キー対応） ---
-            image_url = ""
-            medium_images = item.get("mediumImageUrls", []) if isinstance(item, dict) else []
-            if medium_images and isinstance(medium_images, list) and len(medium_images) > 0:
-                image_url = medium_images[0].get("imageUrl", "")
+            # item_data がリストの場合（楽天トラベル特有: [ {basicInfo}, {ratingInfo} ] ）
+            base_info = {}
+            if isinstance(item_data, list):
+                for sub in item_data:
+                    if "hotelBasicInfo" in sub:
+                        base_info = sub["hotelBasicInfo"]
+                        break
+                    elif "basicInfo" in sub:
+                        base_info = sub["basicInfo"]
+                        break
+            else:
+                # 辞書の場合
+                base_info = item_data.get("hotelBasicInfo") or item_data.get("basicInfo") or item_data
+
+            # ランキングAPIは 'itemName'、Books検索APIは 'title'、トラベルは 'hotelName'
+            title = base_info.get("hotelName") or base_info.get("itemName") or base_info.get("title") or ""
+            url_link = base_info.get("hotelInformationUrl") or base_info.get("affiliateUrl") or ""
+
+            # --- 画像URL取得 ---
+            image_url = base_info.get("hotelImageUrl") or base_info.get("imageUrl") or ""
             if not image_url:
-                image_url = item.get("imageUrl", "") or item.get("image", "")
+                medium_images = base_info.get("mediumImageUrls", [])
+                if medium_images and isinstance(medium_images, list):
+                    image_url = medium_images[0].get("imageUrl", "")
+            
             if not image_url:
-                images = item.get("images") or item.get("imageUrls") or []
+                images = item_data.get("images") or item_data.get("imageUrls") or []
                 if isinstance(images, list) and images:
                     if isinstance(images[0], dict):
                         image_url = images[0].get("url") or images[0].get("imageUrl") or ""
@@ -151,11 +213,14 @@ class InputCSVGenerator:
                 print(f"\n=== {account} はジャンル設定がないためスキップ ===")
                 continue
 
-            print(f"\n=== {account} 用の商品取得開始 ===")
+            print("\n" + "!" * 50)
+            print(f"!!! DEBUG: ACCOUNT = {account}")
+            print(f"!!! DEBUG: GENRES  = {list(genres.keys()) if genres else 'None'}")
+            print("!" * 50 + "\n")
             account_items = []
 
             for genre_name, url in genres.items():
-                print(f"  {genre_name} を取得中…")
+                print(f"  {genre_name} を取得中… (URL: {url[:50]}...)")
                 items = self.fetch_items(url, genre_name)
                 print(f"    -> {len(items)}件取得しました")
                 account_items.extend(items)
@@ -165,8 +230,12 @@ class InputCSVGenerator:
                 continue
 
             # 保存処理
-            output_path = f"../data/input/{account}_input.csv"
+            # スクリプトの場所基準でパスを解決（srcフォルダ内からの相対パス）
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            output_path = os.path.join(script_dir, "..", "data", "input", f"{account}_input.csv")
+            
             try:
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 with open(output_path, "w", encoding="utf-8", newline="") as f:
                     writer = csv.writer(f)
                     for title, url_link, image_url in account_items:
