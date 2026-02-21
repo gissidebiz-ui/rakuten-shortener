@@ -51,19 +51,19 @@ For production deployment, add these secrets to GitHub repository settings:
 - `GOOGLE_API_KEY`: Google Generative AI API key
 - `GITHUB_TOKEN`: GitHub API token (auto-provided by Actions)
 
-## Local Testing
+# Local Testing
 
 Test workflows locally before pushing:
 
 ```bash
 # Install act (GitHub Actions local runner)
-# Windows: choco install act-cli
-# macOS: brew install act
+# Windows (chocolatey): choco install act
+# macOS (Homebrew): brew install act
 
-# Run specific workflow
-act -j test -l
+# Run specific workflow (job name 'test')
+act -j test
 
-# Run all workflows
+# List available jobs
 act -l
 ```
 
