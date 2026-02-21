@@ -52,12 +52,17 @@ class NormalPostGenerator:
             text = re.sub(r'上記例を参考にして.*', '', text)
             text = re.sub(r'他に\d+パターン.*', '', text)
             
-            # 3. プレースホルダが含まれる場合はエラーとして扱う
-            placeholder_pattern = r'\[.*?\]|【.*?】|〇{2,}|○{2,}|◯{2,}|[X]{2,}|[x]{2,}|[△]{2,}|[Δ]{2,}'
-            if re.search(placeholder_pattern, text):
-                return "[AIエラー] プレースホルダが含まれています"
+            # 3. 改行をリテラル形式に統一（行ずれ防止）
+            text = text.replace("\n", "\\n")
+            
+            # 4. プレースホルダが含まれる場合はエラーとして扱う
+            placeholder_pattern = r'\[.*?\]|【.*?】|〇{2,}|○{2,}|◯{2,}|[X]{2,}|[x]{2,}|[△]{2,}|[Δ]{2,}|[×]{2,}'
+            template_words = ["ブランド名", "商品名", "店舗名", "会社名", "カテゴリー", "〇〇", "○○"]
+            
+            if re.search(placeholder_pattern, text) or any(w in text for w in template_words):
+                return "[AIエラー] プレースホルダまたはテンプレート用単語が含まれています"
                 
-            # 4. 外国語が多すぎる場合のエラー判定
+            # 5. 外国語が多すぎる場合のエラー判定
             if not re.search(r'[ぁ-んァ-ン一-龥]', text):
                  return "[AIエラー] 日本語が含まれていません"
             
