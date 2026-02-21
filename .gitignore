@@ -4,6 +4,7 @@
 
 # API キーおよび認証情報
 config/secrets.yaml
+config/accounts.yaml
 config/.env
 config/.env.local
 .env
