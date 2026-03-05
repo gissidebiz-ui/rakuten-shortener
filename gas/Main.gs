@@ -255,6 +255,14 @@ function generateAndSchedule(rakutenUrl) {
     rakutenUrl = null;
   }
 
+  // 複数のアカウントが同時に実行された場合のAPI衝突・レート制限を回避するため、
+  // 最大20秒のランダムな待機時間を最初に挟む
+  const jitterMs = Math.floor(Math.random() * 20000);
+  Logger.log(
+    `[Main] 同時実行回避のため、約${(jitterMs / 1000).toFixed(1)}秒待機します...`,
+  );
+  Utilities.sleep(jitterMs);
+
   Logger.log("=== 1日分（16件）生成＆スケジュール開始 ===");
   const startTime = Date.now();
 
@@ -301,7 +309,7 @@ function generateAndSchedule(rakutenUrl) {
       }
 
       // API レート制限対策としてセット間に待機
-      if (i < 3) Utilities.sleep(5000);
+      if (i < 3) Utilities.sleep(10000); // バーストを防ぐため10秒待機
     }
 
     if (allPostObjects.length === 0) {

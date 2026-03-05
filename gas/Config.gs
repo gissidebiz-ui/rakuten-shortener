@@ -197,9 +197,9 @@ const POST_CONFIG = {
 const GEMINI_CONFIG = {
   MODEL: "gemini-2.0-flash",
   BASE_URL: "https://generativelanguage.googleapis.com/v1beta/models/",
-  MAX_RETRIES: 7, // 429対策として増加（有料プラン考慮）
+  MAX_RETRIES: 4, // GASの6分タイムアウトを回避するため4回に減少（有料プラン考慮）
   RETRY_DELAY_MS: 2000,
-  BASE_BACKOFF_MS: 4000, // 429エラー時の指数バックオフ基礎時間
+  BASE_BACKOFF_MS: 2000, // 429/500エラー時の指数バックオフ基礎時間を減少
 };
 
 // Threads API 設定
