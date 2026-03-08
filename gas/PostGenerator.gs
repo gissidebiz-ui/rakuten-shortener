@@ -7,6 +7,9 @@
  * ============================================================
  */
 
+// 1日の生成セッション中に選択済みの商品URLを記録し、重複を防止する
+var _usedProductUrls = [];
+
 /**
  * 取得した商品リストからNG商材（Meta規約違反等）を除外する
  * @param {Object[]} products - 商品情報の配列
@@ -75,15 +78,19 @@ function fetchRakutenItems(keyword, hits) {
       `&keyword=${encodeURIComponent(keyword)}` +
       `&hits=${hits}` +
       "&sort=sales" +
-      "&availability=1";
+      "&availability=5";
   } else if (apiType === "travel") {
+    // ランキングAPIを使用（キーワード不要、ジャンル指定で人気宿を取得）
+    const travelGenres = ["all", "onsen", "premium"];
+    const genre = travelGenres[Math.floor(Math.random() * travelGenres.length)];
     rawUrl =
-      `https://app.rakuten.co.jp/services/api/Travel/KeywordHotelSearch/20170426` +
+      `https://app.rakuten.co.jp/services/api/Travel/HotelRanking/20170426` +
       `?applicationId=${appId}` +
       `&accessKey=${accessKey}` +
       `&affiliateId=${affiliateId}` +
-      `&keyword=${encodeURIComponent(keyword)}` +
-      `&hits=${hits}`;
+      `&genre=${genre}` +
+      `&carrier=0`;
+    Logger.log(`[Rakuten] トラベルランキング genre=${genre}`);
   } else {
     rawUrl =
       `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601` +
@@ -123,8 +130,23 @@ function fetchRakutenItems(keyword, hits) {
     }
 
     const data = JSON.parse(content);
-    // 構造の差異に対応（Items, items, hotels）
-    const items = data.Items || data.items || data.hotels || [];
+
+    // ランキングAPIのレスポンス構造に対応（Rankings[].hotels[]）
+    let items = [];
+    if (data.Rankings && Array.isArray(data.Rankings)) {
+      // ランキングAPI: Rankings 配列からホテルを抽出
+      data.Rankings.forEach(function (ranking) {
+        if (ranking.Ranking && ranking.Ranking.hotels) {
+          items = items.concat(ranking.Ranking.hotels);
+        }
+      });
+      Logger.log(
+        `[Rakuten] ランキングAPIから ${items.length} 件のホテルを取得`,
+      );
+    } else {
+      // 検索API: Items / items / hotels
+      items = data.Items || data.items || data.hotels || [];
+    }
 
     if (items.length === 0) {
       Logger.log(`[Rakuten] 商品/施設が見つかりません: ${keyword}`);
@@ -379,18 +401,23 @@ function searchRakutenProduct(keyword, trendData) {
 
   // APIタイプ別クエリ最適化
   if (apiType === "travel") {
-    keyword = "";
-    if (seasonKeyword) {
-      seasonKeyword = seasonKeyword + " 宿";
-    } else {
-      keyword = randomTheme;
+    // ランキングAPIはキーワード不要 → 直接取得
+    try {
+      Logger.log(`[searchRakutenProduct] トラベルランキングAPIから直接取得`);
+      products = fetchRakutenItems("", 10);
+    } catch (e) {
+      Logger.log(
+        `[searchRakutenProduct] トラベルランキング取得エラー: ${e.message}`,
+      );
+      products = [];
     }
   } else if (apiType === "books") {
-    if (keyword) {
-      keyword = keyword + " 本";
-    } else {
-      keyword = randomTheme;
-    }
+    keyword = "予約";
+    // if (keyword) {
+    //   keyword = keyword + " 本 予約";
+    // } else {
+    //   keyword = randomTheme + " 予約";
+    // }
   } else {
     if (!keyword) {
       keyword = randomTheme;
@@ -401,6 +428,9 @@ function searchRakutenProduct(keyword, trendData) {
   if (keyword && seasonKeyword) {
     try {
       let searchKeyword = keyword + " " + seasonKeyword;
+      if (keyword === "予約") {
+        searchKeyword = keyword;
+      }
       if (searchKeyword.length > 35)
         searchKeyword = searchKeyword.substring(0, 35);
       Logger.log(`[searchRakutenProduct] 第1希望で検索: "${searchKeyword}"`);
@@ -457,9 +487,26 @@ function searchRakutenProduct(keyword, trendData) {
     }
   }
 
-  return products.length > 0
-    ? products[Math.floor(Math.random() * products.length)]
-    : null;
+  if (products.length === 0) return null;
+
+  // 使用済み商品を除外して重複を防止
+  var availableProducts = products.filter(function (p) {
+    return _usedProductUrls.indexOf(p.url) === -1;
+  });
+
+  // 全て使用済みの場合はフォールバック（重複を許容）
+  if (availableProducts.length === 0) {
+    Logger.log("[searchRakutenProduct] 未使用の商品がないため重複を許容します");
+    availableProducts = products;
+  }
+
+  var selected =
+    availableProducts[Math.floor(Math.random() * availableProducts.length)];
+  _usedProductUrls.push(selected.url);
+  Logger.log(
+    `[searchRakutenProduct] 選択済み商品数: ${_usedProductUrls.length}`,
+  );
+  return selected;
 }
 
 /**
@@ -881,6 +928,8 @@ ${xAffHints}
   1. 【誇大広告の禁止】「絶対に〜できる」「人生が変わる」「知らないと損する」といった非現実的な約束や過剰な煽り文句は使用しない。
   2. 【情報の透明性】ユーザーの悩みに寄り添い、どのようなアプローチ（例：〇〇という機能を持つ家電、〇〇の成分）が有効であるか、論理的かつ誠実に情報を提供する。
   3. 【自然な誘導】親投稿で解決への道筋を十分に示した上で、文章の最後を『私が厳選した具体的なおすすめ商品は、スレッド（リプライ欄）にまとめました👇』といった、強引さのない誠実な誘導（CTA）で締めくくる。
+・【商材に応じた特別訴求ルール】
+今回紹介する商品ジャンルが本（books）である場合、取得した商品は「これから発売される予約商品」である可能性が高いです。親投稿（フック）の文脈の中に、『いま予約受付中』『忘れないうちに今すぐ予約しておくべき』といった、情報の鮮度と【買い逃し防止（予約の推奨）】の要素を必ず自然に織り交ぜてテキストを生成してください。
 ・子ポスト: ${product.name}のベネフィット（悩みの解決） ＋ 行動喚起（CTA） ＋ ${product.url} ＋ 関連ハッシュタグ（1個のみ）
 ・今日は${todayStr}です。指定された曜日（平日・週末など）のリアルなタイム感と、ユーザーの心理状態（例：日曜の夜の憂鬱、月曜の朝の気怠さ等）に完全に合致した内容にしてください。
 ・【厳禁】実際の曜日や日付と矛盾する表現（例：日曜日なのに「今週も始まったね」、月初なのに「月末」等）は絶対に出力しないでください。
