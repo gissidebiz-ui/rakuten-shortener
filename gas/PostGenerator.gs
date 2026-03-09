@@ -80,17 +80,19 @@ function fetchRakutenItems(keyword, hits) {
       "&sort=sales" +
       "&availability=5";
   } else if (apiType === "travel") {
-    // ランキングAPIを使用（キーワード不要、ジャンル指定で人気宿を取得）
-    const travelGenres = ["all", "onsen", "premium"];
-    const genre = travelGenres[Math.floor(Math.random() * travelGenres.length)];
+    let searchKeyword = keyword;
+    if (!searchKeyword) {
+      const travelKeywords = ["温泉", "サウナ", "高級", "露天風呂", "絶景"];
+      searchKeyword =
+        travelKeywords[Math.floor(Math.random() * travelKeywords.length)];
+    }
     rawUrl =
-      `https://app.rakuten.co.jp/services/api/Travel/HotelRanking/20170426` +
+      `https://app.rakuten.co.jp/services/api/Travel/KeywordHotelSearch/20170426` +
       `?applicationId=${appId}` +
       `&accessKey=${accessKey}` +
       `&affiliateId=${affiliateId}` +
-      `&genre=${genre}` +
-      `&carrier=0`;
-    Logger.log(`[Rakuten] トラベルランキング genre=${genre}`);
+      `&keyword=${encodeURIComponent(searchKeyword)}`;
+    Logger.log(`[Rakuten] トラベルキーワード検索 keyword=${searchKeyword}`);
   } else {
     rawUrl =
       `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601` +
@@ -132,19 +134,15 @@ function fetchRakutenItems(keyword, hits) {
     const data = JSON.parse(content);
 
     // ランキングAPIのレスポンス構造に対応（Rankings[].hotels[]）
+    // またキーワード検索(KeywordHotelSearch)等は hotels[].hotel に入っている
     let items = [];
     if (data.Rankings && Array.isArray(data.Rankings)) {
-      // ランキングAPI: Rankings 配列からホテルを抽出
       data.Rankings.forEach(function (ranking) {
         if (ranking.Ranking && ranking.Ranking.hotels) {
           items = items.concat(ranking.Ranking.hotels);
         }
       });
-      Logger.log(
-        `[Rakuten] ランキングAPIから ${items.length} 件のホテルを取得`,
-      );
     } else {
-      // 検索API: Items / items / hotels
       items = data.Items || data.items || data.hotels || [];
     }
 
@@ -166,22 +164,27 @@ function fetchRakutenItems(keyword, hits) {
 
       let url = i.affiliateUrl || i.itemUrl || i.hotelInformationUrl || "";
       // トラベルAPIでアフィリエイトリンクが画像URLになっている場合の修正
+      // hotelInformationUrl自体がアフィリエイトリンク化されているため直接代入し、
+      // iOS等でHTTPへのリダイレクトがブロックされないよう img.travel を HTTPS にアップグレードする
       if (
         apiType === "travel" &&
         url &&
         url.indexOf("img.travel.rakuten.co.jp") !== -1 &&
         i.hotelInformationUrl
       ) {
-        if (url.indexOf("?pc=") !== -1) {
-          const baseUrl = url.split("?pc=")[0];
-          url = baseUrl + "?pc=" + encodeURIComponent(i.hotelInformationUrl);
-          Logger.log(
-            "[Rakuten] 不正なトラベル画像リンクを施設ページURLで修復しました: " +
-              url,
+        url = i.hotelInformationUrl
+          .replace(
+            "http%3A%2F%2Fimg.travel.rakuten.co.jp",
+            "https%3A%2F%2Fimg.travel.rakuten.co.jp",
+          )
+          .replace(
+            "http://img.travel.rakuten.co.jp",
+            "https://img.travel.rakuten.co.jp",
           );
-        } else {
-          url = i.hotelInformationUrl;
-        }
+        Logger.log(
+          "[Rakuten] トラベル画像リンクをHTTPSにアップグレードして修復しました: " +
+            url,
+        );
       }
 
       return {
@@ -316,21 +319,25 @@ function fetchRakutenItemsByUrl(rakutenApiUrl) {
 
       let url = i.affiliateUrl || i.itemUrl || i.hotelInformationUrl || "";
       // URL指定からの取得時も同様にトラベルの不正画像リンクを修正
+      // hotelInformationUrl自体がアフィリエイトリンク化されているため直接代入し、HTTPS化
       if (
         CONFIG.RAKUTEN_API_TYPE === "travel" &&
         url &&
         url.indexOf("img.travel.rakuten.co.jp") !== -1 &&
         i.hotelInformationUrl
       ) {
-        if (url.indexOf("?pc=") !== -1) {
-          const baseUrl = url.split("?pc=")[0];
-          url = baseUrl + "?pc=" + encodeURIComponent(i.hotelInformationUrl);
-          Logger.log(
-            "[Rakuten] URL指定: 不正なトラベル画像リンクを施設ページURLで修復しました",
+        url = i.hotelInformationUrl
+          .replace(
+            "http%3A%2F%2Fimg.travel.rakuten.co.jp",
+            "https%3A%2F%2Fimg.travel.rakuten.co.jp",
+          )
+          .replace(
+            "http://img.travel.rakuten.co.jp",
+            "https://img.travel.rakuten.co.jp",
           );
-        } else {
-          url = i.hotelInformationUrl;
-        }
+        Logger.log(
+          "[Rakuten] URL指定: トラベル画像リンクをHTTPSにアップグレードして修復しました",
+        );
       }
 
       return {
@@ -440,18 +447,7 @@ function searchRakutenProduct(keyword, trendData) {
   let products = [];
 
   // APIタイプ別クエリ最適化
-  if (apiType === "travel") {
-    // ランキングAPIはキーワード不要 → 直接取得
-    try {
-      Logger.log(`[searchRakutenProduct] トラベルランキングAPIから直接取得`);
-      products = fetchRakutenItems("", 10);
-    } catch (e) {
-      Logger.log(
-        `[searchRakutenProduct] トラベルランキング取得エラー: ${e.message}`,
-      );
-      products = [];
-    }
-  } else if (apiType === "books") {
+  if (apiType === "books") {
     keyword = "予約";
     // if (keyword) {
     //   keyword = keyword + " 本 予約";

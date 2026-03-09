@@ -1,0 +1,101 @@
+HTTP/1.1 302 Found
+date: Sun, 08 Mar 2026 14:38:42 GMT
+server: Apache
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+location: https://pt.afl.rakuten.co.jp/c/1b4f52c0.25c19287/?url=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fra%2FyS4PR%2F%3Ff_no%3D74708&ref=&ut=&link_type=&afct=g_0
+vary: Accept,Accept-Encoding
+content-type: text/plain; charset=utf-8
+content-length: 193
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+
+HTTP/1.1 302 Found
+Date: Sun, 08 Mar 2026 14:38:42 GMT
+Server: Apache
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Security-Policy: default-src 'self' https://*.rakuten.co.jp https://*.rakuten-static.com
+X-RT-REQUEST-TIME: t=1772980722640251
+P3P: CP="BUS OUR PHY STP ADM CUR DEV PSA PSD"
+X-RT-REF: 
+X-RT-TRACKING-STATUS: 8
+X-RT-HID: 1470897561295397220
+Content-Security-Policy: default-src 'self' https://*.rakuten.co.jp https://*.rakuten-static.com
+Content-Length: 0
+Location: https://img.travel.rakuten.co.jp/image/tr/api/ra/yS4PR/?f_no=74708
+Set-Cookie: tg_af_histid=h686973745f6964r3331333433363339363136343338333936363332333033303332333133363334326533363332333833343337333433303335; expires=Wed, 08 Mar 2028 14:38:42 GMT; domain=.rakuten.co.jp; path=/; SameSite=Lax
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Connection: close
+
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Content-Length: 0
+Location: https://hotel.travel.rakuten.co.jp/hinfo/?f_no=74708
+Content-Language: en-US
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+Expires: Sun, 08 Mar 2026 14:38:42 GMT
+Cache-Control: max-age=0, no-cache, no-store
+Pragma: no-cache
+Date: Sun, 08 Mar 2026 14:38:42 GMT
+Connection: keep-alive
+Set-Cookie: WMONID=sEN_VIihriI; Expires=Mon, 08-Mar-2027 23:38:42 GMT; Path=/
+Set-Cookie: TRSID=12700115591270011772980722783; Domain=travel.rakuten.co.jp; Path=/
+
+HTTP/1.1 404 404
+date: Sun, 08 Mar 2026 14:38:42 GMT
+server: Apache
+set-cookie: RTTRACK=b1c94577.64c843e2f1d5a; path=/; expires=Tue, 07-Apr-26 14:38:42 GMT; domain=.travel.rakuten.co.jp
+x-content-type-options: nosniff
+cache-control: private
+set-cookie: WMONID=jBQYH8uvGjd; Expires=Mon, 08-Mar-2027 23:38:42 GMT; Path=/
+set-cookie: JSESSIONID=A08A6FE3AB7A74C58A6A8F9D5D5867FD; Path=/hinfo; HttpOnly
+content-type: text/html;charset=UTF-8
+content-language: en-US
+content-length: 2491
+x-xss-protection: 1; mode=block
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title> 楽天トラベル : 指定されたページが見つかりません（エラー404）</title>
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <style type="text/css">
+        <!--
+        h1,h2,h3,hr,ul,li,p {margin: 0; padding: 0;}
+        h1 {line-height: 1.1; margin: 0 5px; padding-top: 1.1em; font-size: 82%;}
+        h2 {color: #BF0000; font-size: 125%; border-top: 1px #71BF45 solid; padding: 10px 10px 0; line-height: 1.3;}
+        hr {display: none;}
+        #errorTxt {margin: 10px 0 0;}
+        .code{margin: 0; padding: 0 10px 10px; line-height: 1.3;}
+        .description{margin: 0px; padding: 10px; border-top: 1px #71BF45 solid; line-height: 1.3;}
+        .advice {margin: 0 30px 10px; list-style: disc; line-height: 1.3;}
+        #footer {border-top: 1px #999999 solid; padding: 10px 0 0; line-height: 1.4; font-size: 82%; text-align: center;}
+        -->
+    </style>
+</head>
+<body>
+<h1><a href="//travel.rakuten.co.jp/"><img src="https://trvimg.r10s.jp/share/themes/header/images/logo_travel_w89.gif" alt="楽天トラベル"></a></h1>
+<hr>
+<div id="errorTxt">
+    <h2>指定されたページが見つかりません</h2>
+    <p class="code">エラー ： 404 Not Found</p>
+    <p class="description">お手数ですが次のいずれかの方法でページをお探しください。<br>
+        なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。</p>
+    <ul class="advice">
+        <li>ブラウザの再読み込みを行う</li>
+        <li>入力したURL（ページアドレス）にタイプミスがないか確認する</li>
+        <li>楽天トラベルのトップページに戻る<br>
+            <a href="//travel.rakuten.co.jp/">&gt;&gt;楽天トラベルのトップページへ</a></li>
+        <li>楽天グループのサービス一覧から探す<br>
+            <a href="//www.rakuten.co.jp/sitemap/">&gt;&gt;楽天グループのサービス一覧へ</a></li>
+        <li>ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
+        <li>少し時間を置いてもう一度アクセスする</li>
+    </ul>
+</div>
+<hr>
+<p id="footer">© Rakuten Group, Inc.</p>
+</body>
+</html>

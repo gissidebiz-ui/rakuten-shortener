@@ -1,0 +1,12 @@
+HTTP/1.1 302 Found
+date: Sun, 08 Mar 2026 14:26:54 GMT
+server: Apache
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+location: https://pt.afl.rakuten.co.jp/c/1b4f52c0.25c19287/?url=http%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fra%2FyS4PR%2F%3Ff_no%3D129997&ref=&ut=&link_type=&afct=g_0
+vary: Accept,Accept-Encoding
+content-type: text/plain; charset=utf-8
+content-length: 193
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+
+Found. Redirecting to https://pt.afl.rakuten.co.jp/c/1b4f52c0.25c19287/?url=http%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fra%2FyS4PR%2F%3Ff_no%3D129997&ref=&ut=&link_type=&afct=g_0
