@@ -263,7 +263,16 @@ function generateAndSchedule(rakutenUrl) {
   );
   Utilities.sleep(jitterMs);
 
-  Logger.log("=== 1日分（16件）生成＆スケジュール開始 ===");
+  // ScriptAppの重複実行を防止するロック処理
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(0)) {
+    Logger.log("[Main] 他のプロセスが実行中のため（重複実行防止）、一括セット生成を終了します。");
+    writeLog("一括セット生成", "idle", "他の処理が実行中のためスキップしました");
+    return;
+  }
+
+  try {
+    Logger.log("=== 1日分（16件）生成＆スケジュール開始 ===");
   const startTime = Date.now();
 
   // スプレッドシートを初期化（前日の残りなどをクリア）
@@ -363,6 +372,8 @@ function generateAndSchedule(rakutenUrl) {
     Logger.log(`[Main] エラー: ${e.message}`);
     Logger.log(e.stack);
     writeLog("一括セット生成", "error", e.message);
+  } finally {
+    lock.releaseLock();
   }
 }
 
@@ -375,6 +386,12 @@ function generateAndSchedule(rakutenUrl) {
  */
 function processScheduledPosts() {
   if (!shouldPostNow()) return;
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(0)) {
+    Logger.log("[Main] 投稿処理が他で実行中のためスキップします");
+    return;
+  }
 
   try {
     const post = getNextPendingPost();
@@ -419,6 +436,8 @@ function processScheduledPosts() {
       ]);
     }
     writeLog("定期投稿プロセス", "error", e.message);
+  } finally {
+    lock.releaseLock();
   }
 }
 
