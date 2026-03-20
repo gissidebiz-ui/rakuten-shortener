@@ -3,3 +3,6 @@
 
 # Ignore deploy script which contains script IDs
 deploy.ps1
+
+# Ignore automatically generated theme config
+Config_themes.gs

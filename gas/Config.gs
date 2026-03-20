@@ -177,13 +177,13 @@ const POST_CONFIG = {
   HIGH_PERFORMANCE_LIMIT: 5, // 優秀な投稿として抽出する数
 
   // --- 曜日別テーマ ---
-  get THEME_SUNDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_SUNDAY") || "").trim(); },
-  get THEME_MONDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_MONDAY") || "").trim(); },
-  get THEME_TUESDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_TUESDAY") || "").trim(); },
-  get THEME_WEDNESDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_WEDNESDAY") || "").trim(); },
-  get THEME_THURSDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_THURSDAY") || "").trim(); },
-  get THEME_FRIDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_FRIDAY") || "").trim(); },
-  get THEME_SATURDAY() { return (PropertiesService.getScriptProperties().getProperty("THEME_SATURDAY") || "").trim(); },
+  get THEME_SUNDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_SUNDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_SUNDAY") || "").trim(); },
+  get THEME_MONDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_MONDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_MONDAY") || "").trim(); },
+  get THEME_TUESDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_TUESDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_TUESDAY") || "").trim(); },
+  get THEME_WEDNESDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_WEDNESDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_WEDNESDAY") || "").trim(); },
+  get THEME_THURSDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_THURSDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_THURSDAY") || "").trim(); },
+  get THEME_FRIDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_FRIDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_FRIDAY") || "").trim(); },
+  get THEME_SATURDAY() { return (typeof POST_CONFIG_THEMES !== 'undefined' && POST_CONFIG_THEMES.THEME_SATURDAY) || (PropertiesService.getScriptProperties().getProperty("THEME_SATURDAY") || "").trim(); },
 
   get NORMAL_POST_STYLES() {
     const raw =
